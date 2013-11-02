@@ -1,4 +1,5 @@
-django < 1.4
+django < 1.5
 django-nose
 git+git://github.com/nose-devs/nose.git
-south
+
+psycopg2 == 2.4.1

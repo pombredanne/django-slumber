@@ -55,3 +55,10 @@ class Profile(models.Model):
 class Order(models.Model):
     shop = RemoteForeignKey(null=False,
         model_url='slumber://pizzas/slumber_examples/Shop/')
+    nested = RemoteForeignKey(null=True, blank=True,
+        model_url='slumber://pizzas/slumber_ex_shop/NestedModel')
+
+
+class PizzaCrust(models.Model):
+    code = models.fields.CharField(primary_key = True, unique = True, max_length = 3)
+    full_name = models.fields.CharField(max_length = 200)

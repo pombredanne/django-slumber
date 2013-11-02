@@ -4,7 +4,7 @@
 from django.db.models import URLField, SubfieldBase
 
 from slumber.connector.api import _InstanceProxy, get_instance
-from slumber.connector.dictobject import DictObject
+#from slumber.connector.dictobject import DictObject
 from slumber.forms import RemoteForeignKeyField
 from slumber.scheme import to_slumber_scheme, from_slumber_scheme
 from slumber.server import get_slumber_services
@@ -29,14 +29,16 @@ class RemoteForeignKey(URLField):
         pass
 
     def get_db_prep_value(self, value, *a, **kw):
-        if isinstance(value, basestring):
+        if value is None:
+            url = None
+        elif isinstance(value, basestring):
             url = to_slumber_scheme(value, get_slumber_services())
         else:
             url = to_slumber_scheme(value._url, get_slumber_services())
         return super(RemoteForeignKey, self).get_db_prep_value(url, *a, **kw)
 
     def get_prep_value(self, value, *a, **kw):
-        if isinstance(value, basestring) or isinstance(value, DictObject):
+        if isinstance(value, basestring) or value is None:
             return value
         url = to_slumber_scheme(value._url, get_slumber_services())
         return super(RemoteForeignKey, self).get_prep_value(url, *a, **kw)
@@ -58,4 +60,19 @@ class RemoteForeignKey(URLField):
             'model_url': self.model_url}
         defaults.update(kwargs)
         return super(RemoteForeignKey, self).formfield(**defaults)
+
+
+try:
+    # If South in installed then we need to tell it about our custom field
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([
+            (
+                (RemoteForeignKey,),
+                [],
+                {'model_url': ('model_url', {})}
+            )
+        ], [r"^slumber\.fields\.RemoteForeignKey"])
+except ImportError: # pragma: no cover
+    # South isn't installed so don't worry about it
+    pass
 

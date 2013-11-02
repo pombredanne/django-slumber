@@ -1,3 +1,34 @@
+2013-10-28  Kirit Saelensminde  <kirit@felspar.com>
+ Allow us to set up a POST expectation, but not test on the post data itself by setting the expected data to None.
+
+2013-09-24  Kirit Saelensminde  <kirit@felspar.com>
+ The decorator `slumber.connector.ua.for_user` now copies the wrapped function name so that it can be used for tests etc. where the original function name is still needed.
+
+2013-09-18  Chirapat Harigulrak  <chirapat@proteus-tech.com>
+ Make the create operation work for models who don't have a primary key of a numeric sequence.
+
+2013-07-11  Kirit Saelensminde  <kirit@felspar.com>
+ UTF-7 encode the user name in the Authorization header and in the X-FOST-User header.
+ Allow for Unicode data in user names and passwords when remote authenticating.
+
+2013-06-04  Kirit Saelensminde  <kirit@felspar.com>
+ Fixed up some NULL handling problems for the database fields on RemoteForeignKey thanks to Jsaytoe.
+
+2013-04-18  Kirit Saelensminde  <kirit@felspar.com>
+ Added in a Django 1.5 test project and made suitable changes to the code to account for it.
+ Add a South introspection rule for the custom remote foreign key field.
+
+2013-02-14  Kirit Saelensminde  <kirit@felspar.com>
+ Fixed a bug in the caching code that meant that the cache never had any data added to it.
+ The create operation now adds a `pk` data field in the root which can be used to fetch the primary key value that was issued and a `created` one which determines whether a new instance was made or not.
+ Allow a setting `SLUMBER_LOCAL_PREFIX` to be used to override the local prefix calculated from the service name for older configurations that don't make use of a service name.
+
+2012-10-04  Chokchai Phatharamalai  <juacompe@proteus-tech.com>
+ Change the instance cache to be thread safe.
+
+2012-10-02  ruxo  <samrit@proteus-tech.com>
+ Instantiate FakeClient every time. Singleton of Fakeclient keeps error state of previous web call which will eventually raise again on the subsequent call no matter if it is success or not.
+
 2012-08-06  jsaytoe  <jsaytoe@proteus-tech.com>
  Added `update` method to mock instances to make writing tests using it simpler.
 

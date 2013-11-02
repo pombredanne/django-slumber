@@ -20,7 +20,6 @@ from slumber._caches import PER_THREAD
 from slumber.server import get_slumber_local_url_prefix
 
 
-_fake = FakeClient()
 def _real():
     """Don't check certificates when we use httplib2.
     """
@@ -63,7 +62,7 @@ def _calculate_signature(authn_name, method, url, body,
     # pylint: disable=R0914
     to_sign = {}
     if username:
-        to_sign['X-FOST-User'] = username
+        to_sign['X-FOST-User'] = username.encode('utf-7')
     if not isinstance(body, basestring):
         if method in ['POST', 'PUT']:
             logging.info("Encoding POST/PUT data %s", body or {})
@@ -77,12 +76,14 @@ def _calculate_signature(authn_name, method, url, body,
     _, signature = fost_hmac_request_signature(
         settings.SECRET_KEY, method, url, now, to_sign, data)
     headers = {}
-    headers['Authorization'] = 'FOST %s:%s' % (authn_name, signature)
+    headers['Authorization'] = 'FOST %s:%s' % \
+        (authn_name.encode('utf-7'), signature)
     headers['X-FOST-Timestamp'] = now
     headers['X-FOST-Headers'] = ' '.join(['X-FOST-Headers'] + to_sign.keys())
     for key, value in to_sign.items():
         headers[key] = value
-    logging.debug("_calculate_signature %s adding headers: %s", method, headers)
+    logging.debug("_calculate_signature %s adding headers: %s",
+        method, headers)
     if for_fake_client:
         return dict([('HTTP_' + k.upper().replace('-', '_'), v)
             for k, v in headers.items()])
@@ -105,6 +106,7 @@ def for_user(name):
                 return function(*a, **kw)
             finally:
                 PER_THREAD.username = old
+        wrapped.__name__ = function.__name__
         return wrapped
     return decorator
 
@@ -141,7 +143,7 @@ def _get(url, ttl, codes):
     if url_fragment:
         file_spec, query = _parse_qs(url_fragment)
         headers = _sign_request('GET', file_spec, query, True)
-        response = _fake.get(file_spec, query,
+        response = FakeClient().get(file_spec, query,
             HTTP_HOST='localhost:8000', **headers)
         if response.status_code in [301, 302] and \
                 response.status_code not in codes:
@@ -189,7 +191,7 @@ def _post(url, data, codes):
     body = dumps(data) if data else ''
     url_fragment = _use_fake(url)
     if url_fragment:
-        response = _fake.post(url_fragment, body,
+        response = FakeClient().post(url_fragment, body,
             content_type='application/json',
             HTTP_HOST='localhost:8000',
             **_sign_request('POST', url_fragment, body, True))
